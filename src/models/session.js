@@ -1,6 +1,6 @@
 import prettyBytes from 'pretty-bytes';
 import prettyNum from 'pretty-num';
-import { ParserStatusMessages } from './enums';
+import { SorterStatus, WorkerMessageTypes } from './enums';
 
 function extractLeadingNumber(input) {
     return +/^\d+/.exec(input)[0];
@@ -87,7 +87,7 @@ export default class Session {
         }
 
         postMessage({
-            type: ParserStatusMessages.CompletionUpdate,
+            type: WorkerMessageTypes.CompletionUpdate,
             value: 20
         });
 
@@ -97,12 +97,15 @@ export default class Session {
             if (fileLines[i][0] === "G") {
                 this.groups.push([]); // New group.
             } else {
-                this.groups[this.groups.length - 1].push(fileLines[i].substring(5)); // Remove FILE prefix.
+                this.groups[this.groups.length - 1].push({
+                    file: fileLines[i].substring(5),
+                    filtered: false
+                }); // Remove FILE prefix.
             }
 
             if (statusUpdateCount++ % 5000 === 0) {
                 postMessage({
-                    type: ParserStatusMessages.CompletionUpdate,
+                    type: WorkerMessageTypes.CompletionUpdate,
                     value: statusUpdateCount * 75 / fileLines.length + 20
                 });
             }
@@ -121,9 +124,37 @@ export default class Session {
             }
         }
 
+        Session.sortGroups(this.groups);
+
         postMessage({
-            type: ParserStatusMessages.CompletionUpdate,
+            type: WorkerMessageTypes.CompletionUpdate,
             value: 100
         });
+    }
+
+    static sortGroups(groups) {
+        const sortedGroups = new Set();
+        groups.sort((a, b) => {
+            for (const group of [a, b]) {
+                if (!sortedGroups.has(group)) {
+                    group.sort((a, b) => {
+                        if (!a.filtered && b.filtered) return -1;
+                        if (a.filtered && !b.filtered) return 1;
+                        
+                        if (a.file < b.file) return -1;
+                        if (a.file > b.file) return 1;
+                        return 0;
+                    });
+
+                    sortedGroups.add(group);
+                }
+            }
+
+            if (a[0].file < b[0].file) return -1;
+            if (a[0].file > b[0].file) return 1;
+            return 0;
+        });
+
+        return groups;
     }
 }

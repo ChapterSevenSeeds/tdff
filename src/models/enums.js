@@ -4,7 +4,12 @@ export const Modes = {
     hash: "hash"
 };
 
-export const ParserStatusMessages = {
+export const WorkerMessageTypes = {
     CompletionUpdate: 0,
     Finished: 1
+};
+
+export const SorterStatus = {
+    Sorted: 0,
+    NotSorted: 1
 };
