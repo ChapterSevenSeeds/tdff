@@ -1,0 +1,51 @@
+{
+  "name": "tdff",
+  "version": "1.0.0",
+  "description": "GUI for the TDFF-Engine",
+  "engines": {
+    "node": ">=9.0.0",
+    "npm": ">=5.0.0",
+    "yarn": ">=1.0.0"
+  },
+  "browserslist": [
+    "last 4 versions"
+  ],
+  "main": "main.js",
+  "scripts": {
+    "start": "cross-env NODE_ENV=development webpack serve --hot --host 0.0.0.0 --config=./webpack.dev.config.js --mode development",
+    "pack": "cross-env NODE_ENV=production webpack --config webpack.build.config.js --mode production",
+    "build": "npm run pack & npm run postpackage",
+    "postpackage": "electron-packager ./ --out=./release-builds --overwrite"
+  },
+  "dependencies": {
+    "@material-ui/core": "^4.0.1",
+    "@material-ui/icons": "^4.11.2",
+    "core-js": "^3.19.1",
+    "humanize-duration": "^3.27.0",
+    "pretty-bytes": "^5.6.0",
+    "pretty-num": "^0.5.0",
+    "react": "^17.0.2",
+    "react-center-toggle": "^1.1.9",
+    "react-dom": "^17.0.2",
+    "react-window": "^1.8.6",
+    "split-camelcase-to-words": "^1.0.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.6",
+    "@babel/preset-env": "^7.9.6",
+    "@babel/preset-react": "^7.9.4",
+    "babel-loader": "^8.2.3",
+    "cross-env": "^7.0.2",
+    "css-loader": "^3.5.3",
+    "electron": "^9.0.0",
+    "electron-devtools-installer": "^3.0.0",
+    "electron-packager": "^14.2.1",
+    "file-loader": "^6.0.0",
+    "html-webpack-plugin": "^4.3.0",
+    "mini-css-extract-plugin": "^2.4.5",
+    "style-loader": "^1.2.0",
+    "webpack": "^5.64.4",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^3.10.3"
+  }
+}
