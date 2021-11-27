@@ -11,7 +11,8 @@ addEventListener('message', e => {
             } else {
                 groupResults.push({
                     file: file.file,
-                    filtered: true
+                    filtered: true,
+                    selected: false
                 });
             }
         }

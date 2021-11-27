@@ -99,7 +99,8 @@ export default class Session {
             } else {
                 this.groups[this.groups.length - 1].push({
                     file: fileLines[i].substring(5),
-                    filtered: false
+                    filtered: false,
+                    selected: false
                 }); // Remove FILE prefix.
             }
 

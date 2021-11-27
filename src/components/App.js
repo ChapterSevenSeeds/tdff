@@ -1,5 +1,5 @@
-import { Button, Card, CardContent, CardHeader, TextField, Grid, LinearProgress, Table, TableCell, TableContainer, TableBody, TableRow, Typography, useTheme, Accordion, AccordionSummary, AccordionDetails, Divider, IconButton, Tooltip, Chip, Menu, MenuItem } from '@material-ui/core';
-import React, { useRef, useState } from 'react'
+import { Button, Card, CardContent, CardHeader, TextField, Grid, LinearProgress, Table, TableCell, TableContainer, TableBody, TableRow, Typography, useTheme, Accordion, AccordionSummary, AccordionDetails, Divider, IconButton, Tooltip, Chip, Menu, MenuItem, Checkbox, makeStyles } from '@material-ui/core';
+import React, { useCallback, useRef, useState } from 'react'
 import { VariableSizeList as List } from 'react-window';
 import { deepPurple, green } from '@material-ui/core/colors';
 import toWords from 'split-camelcase-to-words';
@@ -7,12 +7,20 @@ import { WorkerMessageTypes } from '../models/enums';
 import { AddCircleOutlined, AddOutlined, CancelOutlined, DoneOutline, ErrorOutlined, ExpandMoreOutlined, ImportContactsOutlined, ListAltOutlined, PlaylistAddCheckOutlined, SettingsApplicationsOutlined, TimerOutlined } from '@material-ui/icons';
 import humanizeDuration from "humanize-duration";
 import ExtensionList from '../models/extensionList';
-import { createWriteStream } from 'original-fs';
 
 const ROW_HEIGHT = 35;
 
+const useStyles = makeStyles({
+	fileGridContainer: {
+		textOverflow: 'ellipsis', 
+		whiteSpace: 'nowrap', 
+		overflow: 'hidden'
+	}
+});
+
 export default function App() {
 	const theme = useTheme();
+	const classes = useStyles();
 	const [session, setSession] = useState({ data: null });
 	const [groups, setGroups] = useState([]);
 	const [loading, setLoading] = useState(false);
@@ -103,6 +111,11 @@ export default function App() {
 		setExtensionsFilter([...extensionsFilter, `{${list}}`]);
 		setExtensionListMenuAnchorElement(null);
 	}
+
+	const handleSelectItem = useCallback(e => {
+		const [index, fileIndex] = e.target.name.split(":").map(x => +x);
+		groups[index][fileIndex].selected = e.target.checked; 
+	}, [groups]);
 
 	return (
 		<div>
@@ -287,7 +300,6 @@ export default function App() {
 							<Grid item>
 								<Grid container spacing={2} alignItems='center'>
 									<Grid item>
-
 										<TextField value={filter} onChange={e => setFilter(e.target.value)} variant='standard' color='primary' label='Filter String' style={{ minWidth: '500px' }} />
 									</Grid>
 									<Grid item>
@@ -351,10 +363,19 @@ export default function App() {
 				itemSize={i => groups[i]?.length * ROW_HEIGHT}
 			>
 				{({ index, style }) => 
-				<div style={style}>
+				<Grid container direction='column' style={{ ...style, backgroundColor: [deepPurple[100], green[100]][index % 2] }}>
 					{groups?.[index]?.map((file, fileIndex) =>
-					<div key={fileIndex} style={{ height: ROW_HEIGHT, backgroundColor: [deepPurple[100], green[100]][index % 2], color: [theme.palette.text.primary, theme.palette.text.secondary][+file.filtered]}}>{file.file}</div>)}
-				</div>}
+					<Grid item key={fileIndex} className={classes.fileGridContainer} style={{ height: ROW_HEIGHT, color: [theme.palette.text.primary, theme.palette.text.secondary][+file.filtered] }}>
+						<Grid container alignItems='center' alignContent='center' wrap='nowrap'>
+							<Grid item>
+								<Checkbox checked={file.selected} name={`${index}:${fileIndex}`} onChange={handleSelectItem} color='primary' size='small' />
+							</Grid>
+							<Grid item>
+								<Typography variant='body2'>{file.file}</Typography>
+							</Grid>
+						</Grid>
+					</Grid>)}
+				</Grid>}
 			</List>
 			<Menu
 				anchorEl={extensionListMenuAnchorElement}
@@ -367,7 +388,6 @@ export default function App() {
 				>
 					{list}
 				</MenuItem>)}
-				
 			</Menu>
 		</div>
 	)
