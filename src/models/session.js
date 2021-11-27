@@ -1,6 +1,7 @@
 import prettyBytes from 'pretty-bytes';
 import prettyNum from 'pretty-num';
 import { SorterStatus, WorkerMessageTypes } from './enums';
+import { nanoid } from 'nanoid'
 
 function extractLeadingNumber(input) {
     return +/^\d+/.exec(input)[0];
@@ -24,7 +25,7 @@ export default class Session {
     totalDuplicates;
     totalDuplicatesSize;
 
-    groups = [];
+    files = [];
 
     /**
      * Constructs a new Session object.
@@ -94,14 +95,16 @@ export default class Session {
         let statusUpdateCount = 0;
         const fileLines = inputFile.splice(0, inputFile.length - 2);
         for (let i = 0; i < fileLines.length; ++i) {
+            let currentGroupId;
             if (fileLines[i][0] === "G") {
-                this.groups.push([]); // New group.
+                currentGroupId = nanoid();
             } else {
-                this.groups[this.groups.length - 1].push({
+                this.files.push({
                     file: fileLines[i].substring(5),
                     filtered: false,
-                    selected: false
-                }); // Remove FILE prefix.
+                    selected: false,
+                    group: currentGroupId
+                });
             }
 
             if (statusUpdateCount++ % 5000 === 0) {
@@ -125,7 +128,7 @@ export default class Session {
             }
         }
 
-        Session.sortGroups(this.groups);
+        Session.sortFiles(this.files);
 
         postMessage({
             type: WorkerMessageTypes.CompletionUpdate,
@@ -133,29 +136,16 @@ export default class Session {
         });
     }
 
-    static sortGroups(groups) {
-        const sortedGroups = new Set();
-        groups.sort((a, b) => {
-            for (const group of [a, b]) {
-                if (!sortedGroups.has(group)) {
-                    group.sort((a, b) => {
-                        if (!a.filtered && b.filtered) return -1;
-                        if (a.filtered && !b.filtered) return 1;
-                        
-                        if (a.file < b.file) return -1;
-                        if (a.file > b.file) return 1;
-                        return 0;
-                    });
+    static sortFiles(files) {
+        files.sort((a, b) => {
+           if (a.group !== b.group) {
+               if (a.file < b.file) return -1;
+               if (a.file >= b.file) return 1;
+           }
 
-                    sortedGroups.add(group);
-                }
-            }
-
-            if (a[0].file < b[0].file) return -1;
-            if (a[0].file > b[0].file) return 1;
-            return 0;
+           if (a.file < b.file) return -1;
         });
 
-        return groups;
+        return files;
     }
 }
