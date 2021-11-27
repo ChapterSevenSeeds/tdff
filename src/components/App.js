@@ -7,6 +7,7 @@ import { WorkerMessageTypes } from '../models/enums';
 import { AddCircleOutlined, AddOutlined, CancelOutlined, DoneOutline, ErrorOutlined, ExpandMoreOutlined, ImportContactsOutlined, ListAltOutlined, PlaylistAddCheckOutlined, SettingsApplicationsOutlined, TimerOutlined } from '@material-ui/icons';
 import humanizeDuration from "humanize-duration";
 import ExtensionList from '../models/extensionList';
+import { createWriteStream } from 'original-fs';
 
 const ROW_HEIGHT = 35;
 
@@ -48,6 +49,17 @@ export default function App() {
 	}
 
 	function applyFilter() {
+		let searchRegexString = '';
+
+		if (filter) {
+			searchRegexString = filter;
+
+			if (extensionsFilter.length > 0) searchRegexString += ".*?";
+		}
+
+		searchRegexString += ExtensionList.constructRegex(extensionsFilter);
+		const searchRegex = new RegExp(searchRegexString, "i");
+
 		setFilterPercentDone(0);
 		setApplyingFilter(true);
 		const filterController = new Worker(new URL('../tools/filterController.js', import.meta.url));
@@ -67,7 +79,7 @@ export default function App() {
 		};
 
 		filterController.postMessage({
-			token: filter,
+			token: searchRegex,
 			items: session.data.groups
 		});
 	}
@@ -288,7 +300,7 @@ export default function App() {
 													<Grid item>
 														<Tooltip title={addExtension ? `Add extension ${addExtension} to the filter list` : ''}>
 															<div>
-																<IconButton onClick={handleAddExtensionFilter} disabled={!addExtension}>
+																<IconButton onClick={handleAddExtensionFilter} disabled={!addExtension} size='small'>
 																	<AddCircleOutlined color={!addExtension ? 'disabled' : 'primary'} />
 																</IconButton>
 															</div>
@@ -296,7 +308,7 @@ export default function App() {
 													</Grid>
 													<Grid item>
 														<Tooltip title='Add extension list'>
-															<IconButton onClick={handleAddExtensionListButtonClick} ref={addExtensionListButtonRef}>
+															<IconButton onClick={handleAddExtensionListButtonClick} ref={addExtensionListButtonRef} size='small'>
 																<ListAltOutlined color='secondary' />
 															</IconButton>
 														</Tooltip>
@@ -306,8 +318,8 @@ export default function App() {
 											<Grid item style={{ maxWidth: '350px' }}>
 												<Grid container spacing={1}>
 													{extensionsFilter.map((extension, index) =>
-													<Grid item>
-														<Chip color={extension[0] === "{" ? 'secondary' : 'primary'} size='small' label={extension} key={index} onDelete={() => setExtensionsFilter(extensionsFilter.filter(x => x !== extension))} />
+													<Grid item key={index}>
+														<Chip color={extension[0] === "{" ? 'secondary' : 'primary'} size='small' label={extension} onDelete={() => setExtensionsFilter(extensionsFilter.filter(x => x !== extension))} />
 													</Grid>)}
 												</Grid>
 											</Grid>

@@ -5,7 +5,7 @@ addEventListener('message', e => {
         const groupResults = [];
         let containsAtLeastOne = false;
         for (const file of group) {
-            if (file.file.includes(e.data.token)) {
+            if (e.data.token.test(file.file)) {
                 groupResults.push(file);
                 containsAtLeastOne = true;
             } else {
