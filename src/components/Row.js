@@ -15,7 +15,6 @@ function rowComparer(previousProps, newProps) {
 export default memo(props => {
     const item = props.data.files[props.index];
     comparerCache[props.index] = cloneDeep(item);
-    console.log(props);
 
     return (
         <Grid container alignItems='center' alignContent='center' wrap='nowrap' className={props.data.classes.fileGridContainer} style={{ ...props.style, backgroundColor: [deepPurple[100], green[100]][item.orderedGroupIndex % 2], color: [props.data.theme.palette.text.primary, props.data.theme.palette.text.secondary][+item.filtered] }}>

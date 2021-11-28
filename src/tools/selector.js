@@ -3,6 +3,8 @@ import { SelectorCommands } from "../models/enums";
 import Session from '../models/session';
 
 function allDupsMatchingFilter(group) {
+    clear(group); // Wipe out all previous selections.
+
     let i = 0;
     for (; i < group.length && !group[i].filtered; ++i) {
         group[i].selected = true;
@@ -12,6 +14,8 @@ function allDupsMatchingFilter(group) {
 }
 
 function allDups(group) {
+    clear(group); // Wipe out all previous selections.
+
     for (let i = 0; i < group.length; ++i) {
         if (i > 0) {
             group[i].selected = true;

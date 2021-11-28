@@ -1,8 +1,10 @@
 import React, { memo, useState, useRef, useCallback } from "react";
-import { Accordion, AccordionSummary, AccordionDetails, Grid, Typography, useTheme, TextField, Menu, MenuItem, Tooltip, IconButton, Button, LinearProgress, Chip } from "@material-ui/core";
+import { Accordion, AccordionSummary, AccordionDetails, Grid, Typography, useTheme, TextField, Menu, MenuItem, Tooltip, IconButton, Button, LinearProgress, Chip, Card, CardHeader, CardContent } from "@material-ui/core";
 import { AddCircleOutlined, CancelOutlined, DoneOutline, ExpandMoreOutlined, ListAltOutlined } from '@material-ui/icons';
 import ExtensionList from '../models/extensionList';
 import { WorkerMessageTypes, SelectorCommands } from '../models/enums';
+import escapeStringRegexp from 'escape-string-regexp';
+import AltCard from "./AltCard";
 
 export default memo(props => {
     const { resetItems, setNewFiles, session, files } = props;
@@ -40,7 +42,7 @@ export default memo(props => {
         let searchRegexString = '';
 
         if (filter) {
-            searchRegexString = filter;
+            searchRegexString = escapeStringRegexp(filter);
 
             if (extensionsFilter.length > 0) searchRegexString += ".*?";
         }
@@ -135,71 +137,91 @@ export default memo(props => {
                     </Grid>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <Grid container spacing={2} alignItems='center'>
+                    <Grid container spacing={2} alignItems='center' justifyContent='space-between' wrap='nowrap'>
                         <Grid item>
-                            <TextField value={filter} onChange={e => setFilter(e.target.value)} variant='standard' color='primary' label='Filter String' style={{ minWidth: '500px' }} />
-                        </Grid>
-                        <Grid item>
-                            <Grid container spacing={1} direction='column'>
+                            <Grid container direction='column' spacing={1}>
                                 <Grid item>
-                                    <Grid container spacing={1} alignItems='center'>
+                                    <Grid container spacing={2} wrap='nowrap'>
                                         <Grid item>
-                                            <TextField value={addExtension} onChange={e => setAddExtension(e.target.value)} variant='standard' margin='dense' label='Add Extension' />
+                                            <TextField value={filter} onChange={e => setFilter(e.target.value)} variant='standard' color='primary' label='Filter String' style={{ minWidth: '500px' }} />
                                         </Grid>
                                         <Grid item>
-                                            <Tooltip title={addExtension ? `Add extension ${addExtension} to the filter list` : ''}>
-                                                <div>
-                                                    <IconButton onClick={handleAddExtensionFilter} disabled={!addExtension} size='small'>
-                                                        <AddCircleOutlined color={!addExtension ? 'disabled' : 'primary'} />
-                                                    </IconButton>
-                                                </div>
-                                            </Tooltip>
-                                        </Grid>
-                                        <Grid item>
-                                            <Tooltip title='Add extension list'>
-                                                <IconButton onClick={handleAddExtensionListButtonClick} ref={addExtensionListButtonRef} size='small'>
-                                                    <ListAltOutlined color='secondary' />
-                                                </IconButton>
-                                            </Tooltip>
-                                        </Grid>
-                                    </Grid>
-                                </Grid>
-                                <Grid item style={{ maxWidth: '350px' }}>
-                                    <Grid container spacing={1}>
-                                        {extensionsFilter.map((extension, index) =>
-                                            <Grid item key={index}>
-                                                <Chip color={extension[0] === "{" ? 'secondary' : 'primary'} size='small' label={extension} onDelete={() => setExtensionsFilter(extensionsFilter.filter(x => x !== extension))} />
+                                            <Grid container spacing={2} wrap='nowrap'>
+                                                <Grid item>
+                                                    <Grid container spacing={1} direction='column'>
+                                                        <Grid item>
+                                                            <TextField value={addExtension} onChange={e => setAddExtension(e.target.value)} variant='standard' margin='dense' label='Add Extension' />
+                                                        </Grid>
+                                                        <Grid item>
+                                                            <Grid container spacing={1} alignItems='center' wrap='nowrap'>
+                                                                <Grid item>
+                                                                    <Tooltip title={addExtension ? `Add extension ${addExtension} to the filter list` : ''}>
+                                                                        <div>
+                                                                            <IconButton onClick={handleAddExtensionFilter} disabled={!addExtension} size='small'>
+                                                                                <AddCircleOutlined color={!addExtension ? 'disabled' : 'primary'} />
+                                                                            </IconButton>
+                                                                        </div>
+                                                                    </Tooltip>
+                                                                </Grid>
+                                                                <Grid item>
+                                                                    <Tooltip title='Add extension list'>
+                                                                        <IconButton onClick={handleAddExtensionListButtonClick} ref={addExtensionListButtonRef} size='small'>
+                                                                            <ListAltOutlined color='secondary' />
+                                                                        </IconButton>
+                                                                    </Tooltip>
+                                                                </Grid>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </Grid>
+                                                </Grid>
+                                                <Grid item>
+                                                    <Grid container spacing={1} style={{ maxHeight: '200px', overflow: 'auto', maxWidth: '90vw' }}>
+                                                        {extensionsFilter.map((extension, index) =>
+                                                            <Grid item key={index}>
+                                                                <Chip color={extension[0] === "{" ? 'secondary' : 'primary'} size='small' label={extension} onDelete={() => setExtensionsFilter(extensionsFilter.filter(x => x !== extension))} />
+                                                            </Grid>
+                                                        )}
+                                                    </Grid>
+                                                </Grid>
                                             </Grid>
-                                        )}
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                                <Grid item>
+                                    <Grid container spacing={2}>
+                                        <Grid item>
+                                            <Button onClick={applyFilter} variant='contained' color='primary'>Apply</Button>
+                                        </Grid>
+                                        <Grid item>
+                                            <Button onClick={clearFilter} variant='outlined' color='secondary'>Clear</Button>
+                                        </Grid>
                                     </Grid>
                                 </Grid>
                             </Grid>
                         </Grid>
                         <Grid item>
-                            <Grid container direction='column' alignContent='center' spacing={2}>
-                                <Grid item>
-                                    <Button onClick={applyFilter} variant='contained' color='primary'>Apply</Button>
+                            <AltCard label='Selections'>
+                                <Grid container direction='column' alignContent='center' alignItems='center' spacing={1}>
+                                    <Grid item>
+                                        <Grid container spacing={1}>
+                                            <Grid item>
+                                                <Button onClick={handleSelectAllDupsMatchingFilter} size='small' variant='contained' color='primary'>Select all duplicates matching filter</Button>
+                                            </Grid>
+                                            <Grid item>
+                                                <Button onClick={handleSelectAllDups} size='small' variant='contained' color='primary'>Select all duplicates</Button>
+                                            </Grid>
+                                        </Grid>
+                                        <Grid container spacing={1}>
+                                            <Grid item>
+                                                <Button onClick={handleInvertSelection} size='small' variant='outlined' color='secondary'>Invert Selection</Button>
+                                            </Grid>
+                                            <Grid item>
+                                                <Button onClick={handleClearSelection} size='small' variant='outlined' color='secondary'>Clear Selection</Button>
+                                            </Grid>
+                                        </Grid>
+                                    </Grid>
                                 </Grid>
-                                <Grid item>
-                                    <Button onClick={clearFilter} variant='outlined' color='secondary'>Clear</Button>
-                                </Grid>
-                            </Grid>
-                        </Grid>
-                        <Grid item>
-                            <Grid container direction='column' alignContent='center' alignItems='center' spacing={1}>
-                                <Grid item>
-                                    <Button onClick={handleSelectAllDupsMatchingFilter} variant='contained' color='primary'>Select all duplicates matching filter</Button>
-                                </Grid>
-                                <Grid item>
-                                    <Button onClick={handleSelectAllDups} variant='contained' color='primary'>Select all duplicates</Button>
-                                </Grid>
-                                <Grid item>
-                                    <Button onClick={handleInvertSelection} variant='outlined' color='secondary'>Invert Selection</Button>
-                                </Grid>
-                                <Grid item>
-                                    <Button onClick={handleClearSelection} variant='outlined' color='secondary'>Clear Selection</Button>
-                                </Grid>
-                            </Grid>
+                            </AltCard>
                         </Grid>
                     </Grid>
                 </AccordionDetails>

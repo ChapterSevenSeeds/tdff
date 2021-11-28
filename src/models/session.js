@@ -1,12 +1,8 @@
 import prettyBytes from 'pretty-bytes';
 import prettyNum from 'pretty-num';
-import { SorterStatus, WorkerMessageTypes } from './enums';
-import { nanoid } from 'nanoid'
+import { WorkerMessageTypes } from './enums';
 import _ from 'lodash';
-
-function extractLeadingNumber(input) {
-    return +/^\d+/.exec(input)[0];
-}
+import extractLeadingNumber from '../tools/extractLeadingNumber';
 
 export default class Session {
     mode;
