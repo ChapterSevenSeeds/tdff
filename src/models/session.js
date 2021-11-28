@@ -2,6 +2,7 @@ import prettyBytes from 'pretty-bytes';
 import prettyNum from 'pretty-num';
 import { SorterStatus, WorkerMessageTypes } from './enums';
 import { nanoid } from 'nanoid'
+import _ from 'lodash';
 
 function extractLeadingNumber(input) {
     return +/^\d+/.exec(input)[0];
@@ -94,16 +95,16 @@ export default class Session {
 
         let statusUpdateCount = 0;
         const fileLines = inputFile.splice(0, inputFile.length - 2);
+        let currentGroupIndex = -1;
         for (let i = 0; i < fileLines.length; ++i) {
-            let currentGroupId;
             if (fileLines[i][0] === "G") {
-                currentGroupId = nanoid();
+                ++currentGroupIndex;
             } else {
                 this.files.push({
                     file: fileLines[i].substring(5),
                     filtered: false,
                     selected: false,
-                    group: currentGroupId
+                    group: currentGroupIndex
                 });
             }
 
@@ -128,7 +129,7 @@ export default class Session {
             }
         }
 
-        Session.sortFiles(this.files);
+        this.files = Session.sortFiles(this.files);
 
         postMessage({
             type: WorkerMessageTypes.CompletionUpdate,
@@ -136,16 +137,43 @@ export default class Session {
         });
     }
 
-    static sortFiles(files) {
-        files.sort((a, b) => {
-           if (a.group !== b.group) {
-               if (a.file < b.file) return -1;
-               if (a.file >= b.file) return 1;
-           }
+    static sortFiles(items, alreadyInGroups = false) {
+        let groups;
 
-           if (a.file < b.file) return -1;
+        if (alreadyInGroups) {
+            groups = items;
+        } else {
+            groups = Object.values(_.groupBy(items, 'group'));
+        }
+
+        const isSorted = new Set();
+        groups.sort((a, b) => {
+            for (const group of [a, b]) {
+                if (!isSorted.has(group)) {
+                    group.sort((a, b) => {
+                        if (!a.filtered && b.filtered) return -1;
+                        if (a.filtered && !b.filtered) return 1;
+                        if (a.file < b.file) return -1;
+                        if (a.file > b.file) return 1;
+                        return 0;
+                    });
+
+                    isSorted.add(group);
+                }
+            }
+
+            if (a[0].file < b[0].file) return -1;
+            if (a[0].file > b[0].file) return 1;
+            return 0;
         });
 
-        return files;
+        // Place currently ordered group indexes into each file (for group coloring in the UI).
+        for (let i = 0; i < groups.length; ++i) {
+            for (const file of groups[i]) {
+                file.orderedGroupIndex = i;
+            }
+        }
+
+        return _.flatten(groups);
     }
 }

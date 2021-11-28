@@ -12,7 +12,8 @@ addEventListener('message', e => {
                 groupResults.push({
                     file: file.file,
                     filtered: true,
-                    selected: false
+                    selected: false,
+                    group: file.group
                 });
             }
         }

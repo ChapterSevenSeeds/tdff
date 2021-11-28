@@ -22,6 +22,7 @@
     "@material-ui/icons": "^4.11.2",
     "core-js": "^3.19.1",
     "humanize-duration": "^3.27.0",
+    "lodash": "^4.17.21",
     "nanoid": "^3.1.30",
     "pretty-bytes": "^5.6.0",
     "pretty-num": "^0.5.0",
