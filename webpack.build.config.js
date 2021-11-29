@@ -25,6 +25,15 @@ module.exports = {
 			},
 		],
 	},
+	externals: {
+		'node:fs': 'commonjs2 fs',
+		'node:path': 'commonjs2 path',
+		'node:process': 'commonjs2 process',
+		'node:util': 'commonjs2 util',
+		'node:child_process': 'commonjs2 child_process',
+		'node:url': 'commonjs2 url',
+		'node:os': 'commonjs2 os'
+	},
 	target: 'electron-renderer',
 	plugins: [
 		new HtmlWebpackPlugin({ title: 'React Electron App' }),

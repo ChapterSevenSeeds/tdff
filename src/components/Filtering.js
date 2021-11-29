@@ -99,6 +99,20 @@ export default memo(props => {
     const handleInvertSelection = useCallback(() => handleSelectOptionClick(SelectorCommands.Invert), []);
     const handleClearSelection = useCallback(() => handleSelectOptionClick(SelectorCommands.Clear), []);
 
+    const handleDeleteSelectedFiles = useCallback(() => {
+        setWorkingBarVariant('indeterminate');
+        setWorking(true);
+
+        const selector = new Worker(new URL('../tools/trasher.js', import.meta.url));
+
+        selector.onmessage = e => {
+            selector.terminate();
+            setWorking(false);
+        };
+
+        selector.postMessage(files.current);
+    }, []);
+
     return (
         <>
             <Accordion defaultExpanded>
@@ -217,6 +231,9 @@ export default memo(props => {
                                             </Grid>
                                             <Grid item>
                                                 <Button onClick={handleClearSelection} size='small' variant='outlined' color='secondary'>Clear Selection</Button>
+                                            </Grid>
+                                            <Grid item>
+                                                <Button onClick={handleDeleteSelectedFiles} size='small' variant='contained' color='primary'>Delete Selected Files</Button>
                                             </Grid>
                                         </Grid>
                                     </Grid>

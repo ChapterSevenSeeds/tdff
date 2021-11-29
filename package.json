@@ -31,10 +31,12 @@
     "react-center-toggle": "^1.1.9",
     "react-dom": "^17.0.2",
     "react-window": "^1.8.6",
-    "split-camelcase-to-words": "^1.0.1"
+    "split-camelcase-to-words": "^1.0.1",
+    "trash": "^8.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
+    "@babel/plugin-transform-runtime": "^7.16.4",
     "@babel/preset-env": "^7.9.6",
     "@babel/preset-react": "^7.9.4",
     "babel-loader": "^8.2.3",
